@@ -25,6 +25,19 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
+            --header-bg: rgba(15, 17, 26, 0.9);
+            --card-bg: rgba(0, 0, 0, 0.75);
+        }
+
+        .light-mode {
+            --bg-base: #F3F4F6;
+            --bg-app: #FFFFFF;
+            --glass-bg: rgba(0, 0, 0, 0.04);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-main: #111827;
+            --text-muted: #4B5563;
+            --header-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.85);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -39,12 +52,12 @@
         .text-neon { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
 
         /* CABECERA CON BOTÓN DE SEGURIDAD */
-        header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: rgba(15, 17, 26, 0.9); z-index: 50; }
-        .header-cart-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: none; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: var(--header-bg); z-index: 50; }
+        .header-cart-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: none; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
         .header-cart-btn:active { transform: scale(0.9); }
         .badge { background: var(--neon-2); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75rem; }
 
-        .content { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative; }
+        .content { flex: 1; overflow-y: auto; padding-bottom: calc(150px + env(safe-area-inset-bottom)); position: relative; }
         .section-title { font-size: 1.15rem; font-weight: 800; margin: 20px 20px 15px; }
 
         /* WIDGET DE MAPA (ESTILO UBER) - A PRUEBA DE FALLOS GPS */
@@ -55,8 +68,8 @@
         .pin-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 400; pointer-events: none; text-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 38px; }
         
         .map-controls { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 400; pointer-events: none; }
-        .map-hint { background: rgba(0,0,0,0.75); padding: 8px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--glass-border); pointer-events: auto; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
-        .gps-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 12px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: auto; cursor: pointer; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; gap: 5px; }
+        .map-hint { background: var(--card-bg); color: var(--text-main); padding: 8px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--glass-border); pointer-events: auto; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .gps-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 12px; border-radius: 12px; color: var(--text-main); font-weight: bold; font-size: 0.9rem; pointer-events: auto; cursor: pointer; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; gap: 5px; }
 
         /* CATEGORÍAS */
         .cat-row { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px; }
@@ -76,22 +89,43 @@
         .tag-row { display: flex; gap: 8px; font-size: 0.7rem; font-weight: 700; color: var(--neon-1); margin-top: 8px; }
         .tag { background: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 8px; }
 
+        /* CAROUSEL FAVORITOS (IMG_8460 style) */
+        .fav-carousel { display: flex; gap: 15px; overflow-x: auto; padding: 0 20px; scroll-padding: 20px; }
+        .fav-card { min-width: 260px; background: var(--glass-bg); border-radius: 24px; border: 1px solid var(--glass-border); overflow: hidden; position: relative; }
+        .fav-card img { width: 100%; height: 160px; object-fit: cover; }
+        .fav-content { padding: 15px; }
+        .fav-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .fav-name { font-size: 1rem; font-weight: 800; margin: 0; }
+        .fav-rating { background: var(--gradient); color: white; padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 4px; }
+        .fav-stats { display: flex; gap: 12px; color: var(--text-muted); font-size: 0.75rem; font-weight: 600; margin-top: 10px; }
+        .fav-stats span { display: flex; align-items: center; gap: 4px; }
+        .fav-dist { position: absolute; top: 12px; right: 12px; background: var(--card-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--text-main); padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; }
+
         /* BOTÓN INFERIOR FLOTANTE - INFALIBLE PARA IOS */
         .cart-bar { position: absolute; /* env(safe-area) suma los pixeles exactos de la barra inferior de los iPhone */ bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 20px; right: 20px; background: var(--gradient); border-radius: 20px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(255, 94, 0, 0.4); z-index: 100; cursor: pointer; display: none; animation: slideUp 0.3s ease-out forwards; }
         @keyframes slideUp { from { transform: translateY(150%); } to { transform: translateY(0); } }
         .cart-bar-qty { background: white; color: var(--neon-2); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.95rem; }
 
+        /* NAVEGACIÓN INFERIOR (IMG_8369 style) */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: calc(75px + env(safe-area-inset-bottom)); background: var(--header-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 12px; z-index: 150; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; transition: 0.3s; flex: 1; }
+        .nav-item.active { color: var(--neon-1); }
+        .nav-item i { font-size: 1.5rem; }
+        .nav-item span { font-size: 0.7rem; font-weight: 700; }
+
+        .cart-bar { bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+
         /* MODALES */
         .modal { position: absolute; inset: 0; background: var(--bg-app); z-index: 500; transform: translateX(100%); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
         .modal.open { transform: translateX(0); }
-        .modal-header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
-        .btn-icon { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; }
+        .modal-header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: var(--bg-app); }
+        .btn-icon { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; }
 
         /* MENÚ INTERNO */
         .menu-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
         .menu-item { display: flex; gap: 15px; padding: 15px; border-radius: 20px; align-items: center; margin-bottom: 15px; }
         .menu-item img { width: 85px; height: 85px; border-radius: 15px; object-fit: cover; }
-        .btn-add { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.2s; }
+        .btn-add { background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-main); width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.2s; }
         .btn-add:active { background: var(--gradient); border-color: transparent; transform: scale(0.9); }
 
         /* CHECKOUT MAP Y TICKET */
@@ -108,9 +142,46 @@
         /* Limpieza visual de Leaflet */
         .leaflet-routing-container { display: none !important; }
         .leaflet-control-attribution { display: none !important; }
+
+        /* MODAL DE BIENVENIDA Y TOGGLE CREATIVO */
+        .welcome-screen { position: fixed; inset: 0; background: var(--bg-app); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
+        .welcome-screen.hidden { display: none; }
+
+        /* Toggle de Modo (IMG_8458 style) */
+        .theme-switch-wrapper { display: flex; align-items: center; gap: 15px; margin: 30px 0; background: var(--glass-bg); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border); }
+        .theme-switch { position: relative; width: 60px; height: 32px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 24px; width: 24px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        input:checked + .slider { background: var(--gradient); }
+        input:checked + .slider:before { transform: translateX(28px); }
+        .switch-icon { font-size: 1.4rem; color: var(--text-muted); transition: 0.3s; }
+        .switch-icon.active { color: var(--neon-1); }
+
+        .btn-welcome { background: var(--gradient); color: white; border: none; padding: 18px 40px; border-radius: 50px; font-weight: 800; font-size: 1.1rem; width: 100%; max-width: 300px; margin-top: 20px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 94, 0, 0.3); }
     </style>
 </head>
 <body>
+
+<div id="welcome-modal" class="welcome-screen">
+    <div style="background: var(--gradient); width: 80px; height: 80px; border-radius: 25px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px; box-shadow: 0 15px 35px rgba(255, 94, 0, 0.4);">
+        <i class="ph-fill ph-motorcycle" style="font-size: 3rem; color: white;"></i>
+    </div>
+    <h1 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 10px;">¡Hola en PopaPro!</h1>
+    <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px;">Personaliza tu experiencia y permite que te encontremos para llevarte lo mejor.</p>
+
+    <div class="theme-switch-wrapper">
+        <i class="ph-bold ph-moon switch-icon active" id="icon-dark"></i>
+        <label class="theme-switch">
+            <input type="checkbox" id="theme-toggle-chk" onchange="toggleTheme(this.checked)">
+            <span class="slider"></span>
+        </label>
+        <i class="ph-bold ph-sun switch-icon" id="icon-light"></i>
+    </div>
+
+    <button class="btn-welcome" onclick="initAppConGps()">Permitir Ubicación <i class="ph-bold ph-navigation-arrow"></i></button>
+    <p onclick="initAppSinGps()" style="margin-top: 25px; color: var(--text-muted); font-size: 0.9rem; text-decoration: underline; cursor: pointer;">Omitir por ahora</p>
+</div>
 
 <div id="app">
     <header>
@@ -135,6 +206,9 @@
         <h2 class="section-title">¿Qué antojo tienes hoy?</h2>
         <div class="cat-row" id="cat-row"></div>
 
+        <h2 class="section-title">Los favoritos de todos</h2>
+        <div class="fav-carousel" id="fav-carousel"></div>
+
         <h2 class="section-title">Top en Popayán</h2>
         <div class="rest-list" id="rest-container"></div>
     </div>
@@ -146,6 +220,25 @@
         </div>
         <span id="cart-total">$0</span>
     </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <i class="ph-fill ph-house"></i>
+            <span>Inicio</span>
+        </div>
+        <div class="nav-item">
+            <i class="ph-bold ph-tag"></i>
+            <span>Ofertas</span>
+        </div>
+        <div class="nav-item">
+            <i class="ph-bold ph-heart"></i>
+            <span>Favoritos</span>
+        </div>
+        <div class="nav-item">
+            <i class="ph-bold ph-user-circle"></i>
+            <span>Cuenta</span>
+        </div>
+    </nav>
 
     <div id="modal-menu" class="modal">
         <div class="modal-header">
@@ -213,6 +306,7 @@
     };
 
     let RESTAURANTS = []; let idCount = 1;
+    let isDarkMode = true;
     for (const cat in NOMBRES) {
         NOMBRES[cat].forEach((name, i) => {
             const z = ZONAS[i];
@@ -230,23 +324,85 @@
     let userLoc = [2.4419, -76.6063]; // Centro histórico por defecto
 
     window.onload = () => {
-        // Inicializar Categorías
+        if(localStorage.getItem('popapro-init')) {
+            document.getElementById('welcome-modal').classList.add('hidden');
+            const savedTheme = localStorage.getItem('popapro-theme');
+            if(savedTheme === 'light') {
+                document.getElementById('theme-toggle-chk').checked = true;
+                toggleTheme(true);
+            }
+        }
+
         const catRow = document.getElementById('cat-row');
         CATEGORIES.forEach((c, i) => {
             catRow.innerHTML += `<div class="glass cat-card ${i===0?'active':''}" onclick="filterCat('${c.id}', this)"><i class="ph-duotone ${c.icon}"></i><span>${c.name}</span></div>`;
         });
         filterCat('burger', catRow.firstElementChild);
 
-        // Inicializar Mapa Principal interactivo
+        const favCont = document.getElementById('fav-carousel');
+        const favorites = RESTAURANTS.slice(0, 4);
+        favorites.forEach(f => {
+            favCont.innerHTML += `
+                <div class="fav-card" onclick="openRest(${f.id})">
+                    <img src="${f.img}">
+                    <div class="fav-dist">~1.2 km</div>
+                    <div class="fav-content">
+                        <div class="fav-header">
+                            <h3 class="fav-name">${f.name}</h3>
+                            <div class="fav-rating"><i class="ph-fill ph-star"></i> 4.8</div>
+                        </div>
+                        <div class="fav-stats">
+                            <span><i class="ph-bold ph-clock"></i> ${f.prep} min</span>
+                            <span><i class="ph-bold ph-moped"></i> $2.500</span>
+                        </div>
+                    </div>
+                </div>`;
+        });
+
         mapMain = L.map('home-map', {zoomControl: false}).setView(userLoc, 15);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapMain);
+        updateMapTiles(mapMain);
         
-        // MAGIA: El mapa captura las coordenadas del centro cada vez que el usuario termina de deslizarlo
         mapMain.on('moveend', () => {
             const center = mapMain.getCenter();
             userLoc = [center.lat, center.lng];
         });
     };
+
+    function toggleTheme(isLight) {
+        isDarkMode = !isLight;
+        if(isLight) {
+            document.body.classList.add('light-mode');
+            document.getElementById('icon-light').classList.add('active');
+            document.getElementById('icon-dark').classList.remove('active');
+            localStorage.setItem('popapro-theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            document.getElementById('icon-light').classList.remove('active');
+            document.getElementById('icon-dark').classList.add('active');
+            localStorage.setItem('popapro-theme', 'dark');
+        }
+        if(mapMain) updateMapTiles(mapMain);
+        if(mapRoute) updateMapTiles(mapRoute);
+    }
+
+    function updateMapTiles(m) {
+        m.eachLayer(layer => { if(layer instanceof L.TileLayer) m.removeLayer(layer); });
+        const url = isDarkMode ?
+            'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' :
+            'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        L.tileLayer(url, { maxZoom: 19 }).addTo(m);
+    }
+
+    function initAppConGps() {
+        localStorage.setItem('popapro-init', 'true');
+        document.getElementById('welcome-modal').classList.add('hidden');
+        forzarGPS();
+    }
+
+    function initAppSinGps() {
+        localStorage.setItem('popapro-init', 'true');
+        document.getElementById('welcome-modal').classList.add('hidden');
+    }
 
     function filterCat(catId, el) {
         if(el) { document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
@@ -361,7 +517,7 @@
     function trazarRuta() {
         if(!mapRoute) {
             mapRoute = L.map('checkout-map', {zoomControl: false}).setView(userLoc, 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapRoute);
+            updateMapTiles(mapRoute);
         }
         mapRoute.invalidateSize();
         if(routingControl) mapRoute.removeControl(routingControl);
