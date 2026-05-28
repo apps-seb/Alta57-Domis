@@ -111,23 +111,26 @@
 
         /* MODAL DE PERMISO GPS PREMIUM */
         .gps-modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            display: flex; justify-content: center; align-items: center;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; justify-content: center; align-items: flex-end;
             z-index: 2000; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
         }
         .gps-modal-overlay.open { opacity: 1; pointer-events: auto; }
         .gps-card {
-            width: 85%; max-width: 360px; padding: 40px 30px; border-radius: 35px;
-            text-align: center; transform: translateY(20px); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 92%; max-width: 400px; padding: 35px 25px; border-radius: 30px 30px 40px 40px;
+            text-align: center; transform: translateY(100%); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: linear-gradient(180deg, rgba(30, 32, 45, 0.95) 0%, rgba(15, 17, 26, 0.98) 100%);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
         }
-        .gps-modal-overlay.open .gps-card { transform: translateY(0); }
+        .gps-modal-overlay.open .gps-card { transform: translateY(-10px); }
         .gps-icon-box {
-            width: 85px; height: 85px; background: var(--gradient); border-radius: 28px;
+            width: 70px; height: 70px; background: var(--gradient); border-radius: 22px;
             display: flex; justify-content: center; align-items: center;
-            margin: 0 auto 25px; font-size: 2.8rem; box-shadow: 0 15px 30px rgba(255, 94, 0, 0.4);
-            animation: pulse-gps 2s infinite;
+            margin: 0 auto 20px; font-size: 2.2rem; box-shadow: 0 10px 25px rgba(255, 94, 0, 0.3);
+            animation: pulse-gps 2.5s infinite;
         }
         @keyframes pulse-gps {
             0% { transform: scale(1); box-shadow: 0 15px 30px rgba(255, 94, 0, 0.4); }
@@ -139,20 +142,26 @@
 <body>
 
 <div id="modal-gps" class="gps-modal-overlay">
-    <div class="glass gps-card">
+    <div class="gps-card">
         <div class="gps-icon-box">
-            <i class="ph-fill ph-map-pin-line" style="color: white;"></i>
+            <i class="ph-fill ph-navigation-arrow" style="color: white;"></i>
         </div>
-        <h2 style="margin-bottom: 12px; font-weight: 900; font-size: 1.5rem;">Activar GPS</h2>
-        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
-            Para entregarte comida caliente y rápida, necesitamos saber dónde estás. ¿Nos permites ubicarte?
+        <h2 style="margin-bottom: 10px; font-weight: 900; font-size: 1.6rem; letter-spacing: -0.5px;">Permitir Ubicación</h2>
+        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.5; margin-bottom: 25px; padding: 0 10px;">
+            Necesitamos tu ubicación para mostrarte los mejores restaurantes cerca de ti y asegurar una entrega precisa.
         </p>
-        <button class="btn-pay" style="margin-top: 0; margin-bottom: 20px; width: 100%;" onclick="solicitarGPS()">
-            <i class="ph-bold ph-navigation-arrow"></i> Permitir Ubicación
-        </button>
-        <div style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; text-decoration: underline; font-weight: 600;" onclick="cerrarGPSModal()">
-            Elegir manualmente
+
+        <div style="background: rgba(255,255,255,0.03); border-radius: 20px; padding: 15px; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; text-align: left; border: 1px solid rgba(255,255,255,0.05);">
+            <i class="ph-bold ph-shield-check" style="color: #10B981; font-size: 1.5rem;"></i>
+            <p style="font-size: 0.8rem; color: #9CA3AF;">Tu privacidad es importante. Solo usamos tu GPS mientras la app está abierta.</p>
         </div>
+
+        <button class="btn-pay" style="margin-top: 0; margin-bottom: 15px; width: 100%; height: 60px; border-radius: 18px; font-size: 1.1rem;" onclick="solicitarGPS()">
+            Continuar y Permitir
+        </button>
+        <button style="background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; font-weight: 600; padding: 10px;" onclick="cerrarGPSModal()">
+            Ingresar dirección manualmente
+        </button>
     </div>
 </div>
 
@@ -306,7 +315,10 @@
     async function solicitarGPS() {
         const btn = document.querySelector('#modal-gps .btn-pay');
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Solicitando...';
+
+        if (btn.disabled) return;
+
+        btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Esperando GPS...';
         btn.disabled = true;
 
         if (!navigator.geolocation) {
@@ -315,40 +327,61 @@
             return;
         }
 
-        // En iOS, la solicitud debe ser disparada por una acción del usuario (como este click)
+        // Configuración optimizada para móviles (iOS/Android)
+        const geoOptions = {
+            enableHighAccuracy: true, // Requerido para precisión GPS real
+            timeout: 10000,           // 10 segundos máximo
+            maximumAge: 0             // No usar caché para mayor exactitud
+        };
+
+        // En iOS, la solicitud DEBE ser disparada por una acción directa (como este click)
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
                 userLoc = [lat, lng];
-                mapMain.setView(userLoc, 17);
+
+                if (mapMain) {
+                    mapMain.setView(userLoc, 17);
+                }
+
                 localStorage.setItem('gps_perm', 'true');
 
-                // Actualizar UI del botón de GPS en el mapa también
-                const gpsBtn = document.getElementById('btn-gps');
-                gpsBtn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
-                gpsBtn.style.borderColor = '#10B981';
-                gpsBtn.style.color = '#10B981';
+                // Feedback visual exitoso
+                btn.style.background = '#10B981';
+                btn.innerHTML = '<i class="ph-bold ph-check"></i> ¡Ubicado!';
 
-                cerrarGPSModal();
+                const gpsBtn = document.getElementById('btn-gps');
+                if (gpsBtn) {
+                    gpsBtn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
+                    gpsBtn.style.borderColor = '#10B981';
+                    gpsBtn.style.color = '#10B981';
+                }
+
+                setTimeout(cerrarGPSModal, 800);
             },
             (err) => {
                 console.error("Error GPS:", err);
-                let msg = "No pudimos obtener tu ubicación.";
-                if (err.code === 1) msg = "Has denegado el permiso de ubicación. Por favor actívalo en los ajustes de tu navegador.";
-                else if (err.code === 2) msg = "Ubicación no disponible.";
-                else if (err.code === 3) msg = "Tiempo de espera agotado.";
-
-                alert(msg);
-                btn.innerHTML = originalText;
                 btn.disabled = false;
-                cerrarGPSModal();
+                btn.innerHTML = originalText;
+
+                let msg = "";
+                switch(err.code) {
+                    case 1: // PERMISSION_DENIED
+                        msg = "Permiso denegado. Para continuar, activa la ubicación en Configuración > Safari > Ubicación.";
+                        break;
+                    case 2: // POSITION_UNAVAILABLE
+                        msg = "Ubicación no disponible. Revisa tu señal de GPS.";
+                        break;
+                    case 3: // TIMEOUT
+                        msg = "La solicitud expiró. Inténtalo de nuevo.";
+                        break;
+                    default:
+                        msg = "Ocurrió un error al obtener tu ubicación.";
+                }
+                alert(msg);
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 8000,
-                maximumAge: 0
-            }
+            geoOptions
         );
     }
 
@@ -372,29 +405,35 @@
        3. INTENTO DE GPS (Bypass de Errores)
        ========================================================= */
     function forzarGPS() {
-        // Reutilizamos la lógica del modal o simplemente llamamos a solicitarGPS
-        // pero con un feedback visual en el botón específico del mapa.
         const btn = document.getElementById('btn-gps');
+        if (!btn) return;
+
         const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Satélite...';
         
-        if(!navigator.geolocation) { alert("GPS no compatible."); return; }
+        if(!navigator.geolocation) {
+            alert("GPS no compatible.");
+            btn.innerHTML = originalHTML;
+            return;
+        }
 
         navigator.geolocation.getCurrentPosition(
             pos => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                userLoc = [lat, lng];
+                userLoc = [pos.coords.latitude, pos.coords.longitude];
                 mapMain.setView(userLoc, 17);
                 btn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
-                btn.style.borderColor = '#10B981'; btn.style.color = '#10B981';
+                btn.style.borderColor = '#10B981';
+                btn.style.color = '#10B981';
+                localStorage.setItem('gps_perm', 'true');
             },
             err => {
                 console.error(err);
-                alert("No pudimos obtener tu ubicación exacta. Por favor, asegúrate de tener el GPS activado y dar permisos al navegador.");
+                let msg = "No pudimos obtener tu ubicación.";
+                if (err.code === 1) msg = "Permiso denegado. Actívalo en los ajustes de tu iPhone.";
+                alert(msg);
                 btn.innerHTML = originalHTML;
             },
-            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     }
 
