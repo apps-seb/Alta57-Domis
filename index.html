@@ -2,131 +2,147 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PopaDelivery Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>PopaPro V3 - Nativo</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
 
     <style>
-        /* ================= VARIABLES PREMIUM DARK NEÓN ================= */
+        /* VARIABLES DE DISEÑO PREMIUM */
         :root {
-            --bg-base: #0B0C10;
-            --bg-app: #12141C;
+            --bg-base: #000000;
+            --bg-app: #0F111A;
             --neon-1: #FF5E00;
             --neon-2: #FF0055;
-            --gradient: linear-gradient(135deg, var(--neon-1) 0%, var(--neon-2) 100%);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-blur: blur(16px);
+            --gradient: linear-gradient(135deg, var(--neon-1), var(--neon-2));
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text-main: #FFFFFF;
             --text-muted: #9CA3AF;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { display: none; } /* Ocultar scrollbars */
+        ::-webkit-scrollbar { display: none; }
 
-        body { background: var(--bg-base); color: var(--text-main); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        /* EL TRUCO PARA iOS: 100dvh (Dynamic Viewport Height) evita que la barra de Safari corte la app */
+        body { background: var(--bg-base); color: var(--text-main); display: flex; justify-content: center; height: 100dvh; overflow: hidden; }
 
-        /* Contenedor tipo Smartphone */
-        #app { width: 100%; max-width: 480px; height: 100vh; background: var(--bg-app); position: relative; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(255, 94, 0, 0.1); }
+        #app { width: 100%; max-width: 480px; height: 100dvh; background: var(--bg-app); position: relative; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Efectos Neón de Fondo */
-        #app::before { content: ''; position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: var(--neon-1); filter: blur(150px); opacity: 0.15; z-index: 0; pointer-events: none; }
-
-        /* Clases Reutilizables Glassmorphism */
-        .glass { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); }
+        .glass { background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); }
         .text-neon { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
-        .btn-neon { background: var(--gradient); color: white; border: none; padding: 16px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 94, 0, 0.4); transition: 0.2s; }
-        .btn-neon:active { transform: scale(0.97); }
 
-        /* HEADER */
-        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; background: rgba(18, 20, 28, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border); }
-        .gps-btn { padding: 8px 16px; border-radius: 100px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: 0.3s; color: var(--text-main); }
-        .gps-btn.active { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10B981; }
+        /* CABECERA CON BOTÓN DE SEGURIDAD */
+        header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: rgba(15, 17, 26, 0.9); z-index: 50; }
+        .header-cart-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: none; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .header-cart-btn:active { transform: scale(0.9); }
+        .badge { background: var(--neon-2); color: white; border-radius: 10px; padding: 2px 8px; font-size: 0.75rem; }
 
-        .content-scroll { overflow-y: auto; flex: 1; padding-bottom: 120px; position: relative; z-index: 10; }
-        .section-title { font-size: 1.25rem; font-weight: 800; margin: 25px 20px 15px; }
+        .content { flex: 1; overflow-y: auto; padding-bottom: calc(100px + env(safe-area-inset-bottom)); position: relative; }
+        .section-title { font-size: 1.15rem; font-weight: 800; margin: 20px 20px 15px; }
+
+        /* WIDGET DE MAPA (ESTILO UBER) - A PRUEBA DE FALLOS GPS */
+        .map-widget { height: 200px; position: relative; border-bottom: 1px solid var(--glass-border); background: #000; }
+        #home-map { width: 100%; height: 100%; }
+        
+        /* El pin es HTML/CSS puro, se queda estático en el centro mientras el mapa se mueve por debajo */
+        .pin-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); z-index: 400; pointer-events: none; text-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 38px; }
+        
+        .map-controls { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 400; pointer-events: none; }
+        .map-hint { background: rgba(0,0,0,0.75); padding: 8px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--glass-border); pointer-events: auto; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .gps-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 12px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: auto; cursor: pointer; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); display: flex; align-items: center; gap: 5px; }
 
         /* CATEGORÍAS */
-        .cat-container { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px; }
-        .cat-card { min-width: 110px; padding: 16px 10px; border-radius: 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
-        .cat-card i { font-size: 2.2rem; color: var(--text-muted); transition: 0.3s; }
-        .cat-card span { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-        .cat-card.active { background: var(--gradient); border-color: transparent; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255, 94, 0, 0.3); }
+        .cat-row { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px; }
+        .cat-card { min-width: 100px; padding: 15px 10px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.2s; }
+        .cat-card.active { background: var(--gradient); border-color: transparent; }
+        .cat-card i { font-size: 2.2rem; color: var(--text-muted); }
+        .cat-card span { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
         .cat-card.active i, .cat-card.active span { color: white; }
 
         /* RESTAURANTES */
-        .rest-list { display: flex; flex-direction: column; gap: 15px; padding: 0 20px; margin-top: 10px; }
-        .rest-card { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 24px; cursor: pointer; transition: 0.2s; }
+        .rest-list { display: flex; flex-direction: column; gap: 15px; padding: 0 20px; }
+        .rest-card { display: flex; align-items: center; gap: 15px; padding: 12px; border-radius: 20px; cursor: pointer; transition: 0.2s; }
         .rest-card:active { transform: scale(0.97); }
-        .rest-img { width: 85px; height: 85px; border-radius: 18px; object-fit: cover; }
+        .rest-card img { width: 80px; height: 80px; border-radius: 15px; object-fit: cover; }
         .rest-info { flex: 1; }
-        .rest-info h3 { font-size: 1.1rem; margin: 0 0 5px; font-weight: 700; }
-        .rest-info p { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
-        .tags { display: flex; gap: 8px; font-size: 0.7rem; font-weight: 700; }
-        .tag { background: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 8px; color: var(--neon-1); }
+        .rest-info h3 { font-size: 1rem; margin: 0 0 5px; }
+        .tag-row { display: flex; gap: 8px; font-size: 0.7rem; font-weight: 700; color: var(--neon-1); margin-top: 8px; }
+        .tag { background: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 8px; }
 
-        /* CARRITO FLOTANTE */
-        .cart-fab { position: absolute; bottom: 20px; left: 20px; right: 20px; background: var(--gradient); border-radius: 24px; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; color: white; font-weight: 800; font-size: 1.1rem; box-shadow: 0 15px 30px rgba(255, 94, 0, 0.5); z-index: 90; transform: translateY(150%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; }
-        .cart-fab.visible { transform: translateY(0); }
-        .cart-qty { background: white; color: var(--neon-2); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.95rem; font-weight: 900; }
+        /* BOTÓN INFERIOR FLOTANTE - INFALIBLE PARA IOS */
+        .cart-bar { position: absolute; /* env(safe-area) suma los pixeles exactos de la barra inferior de los iPhone */ bottom: calc(20px + env(safe-area-inset-bottom, 0px)); left: 20px; right: 20px; background: var(--gradient); border-radius: 20px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(255, 94, 0, 0.4); z-index: 100; cursor: pointer; display: none; animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp { from { transform: translateY(150%); } to { transform: translateY(0); } }
+        .cart-bar-qty { background: white; color: var(--neon-2); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.95rem; }
 
-        /* MODALES (Vistas Superpuestas) */
-        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-app); z-index: 100; transform: translateX(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+        /* MODALES */
+        .modal { position: absolute; inset: 0; background: var(--bg-app); z-index: 500; transform: translateX(100%); transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
         .modal.open { transform: translateX(0); }
-        .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); background: var(--bg-app); }
-        .btn-icon { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; }
+        .modal-header { padding: max(15px, env(safe-area-inset-top)) 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); }
+        .btn-icon { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; }
 
-        /* MENÚ DE PLATOS */
-        .menu-grid { padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-bottom: 100px; }
-        .menu-item { display: flex; gap: 15px; padding: 15px; border-radius: 20px; align-items: center; }
-        .menu-item img { width: 90px; height: 90px; border-radius: 15px; object-fit: cover; }
-        .item-details { flex: 1; }
-        .item-details h4 { margin: 0 0 5px; font-size: 1.05rem; }
-        .item-price { color: var(--neon-1); font-weight: 800; font-size: 1.15rem; margin-top: 8px; }
-        .btn-add { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 38px; height: 38px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+        /* MENÚ INTERNO */
+        .menu-scroll { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
+        .menu-item { display: flex; gap: 15px; padding: 15px; border-radius: 20px; align-items: center; margin-bottom: 15px; }
+        .menu-item img { width: 85px; height: 85px; border-radius: 15px; object-fit: cover; }
+        .btn-add { background: var(--glass-bg); border: 1px solid var(--glass-border); color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.2s; }
         .btn-add:active { background: var(--gradient); border-color: transparent; transform: scale(0.9); }
 
-        /* CHECKOUT Y MAPA ALGORÍTMICO */
-        .map-container { width: 100%; height: 30vh; background: #000; position: relative; border-bottom: 1px solid var(--glass-border); }
-        #map { width: 100%; height: 100%; }
-        .loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: 700; color: var(--neon-1); z-index: 400; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        /* CHECKOUT MAP Y TICKET */
+        .checkout-map-container { height: 28%; border-bottom: 1px solid var(--glass-border); position: relative; background: #000; }
+        #checkout-map { width: 100%; height: 100%; }
+        .loader { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: var(--neon-1); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10; }
         
-        .receipt-container { flex: 1; overflow-y: auto; padding: 20px; }
-        .receipt-card { padding: 20px; border-radius: 24px; margin-bottom: 20px; }
+        .ticket-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: calc(40px + env(safe-area-inset-bottom)); }
         .r-row { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--text-muted); font-size: 0.95rem; font-weight: 600; }
         .r-val { color: var(--text-main); font-weight: 800; }
-        .r-total { border-top: 1px dashed var(--glass-border); margin-top: 15px; padding-top: 15px; display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: 900; }
+        .r-total { border-top: 1px dashed var(--glass-border); margin-top: 15px; padding-top: 15px; display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 900; }
+        .btn-pay { background: var(--gradient); color: white; border: none; padding: 18px; border-radius: 20px; font-weight: 800; font-size: 1.1rem; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 94, 0, 0.4); }
 
+        /* Limpieza visual de Leaflet */
         .leaflet-routing-container { display: none !important; }
+        .leaflet-control-attribution { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <header>
-        <h1 class="text-neon" style="font-size: 1.5rem; margin: 0;"><i class="ph-fill ph-motorcycle"></i> PopaPro</h1>
-        <button class="glass gps-btn" id="btn-gps" onclick="activarGPS()">
-            <i class="ph-bold ph-crosshair"></i> Activar GPS
+        <h1 class="text-neon" style="font-size: 1.4rem; margin: 0;"><i class="ph-fill ph-motorcycle"></i> PopaPro</h1>
+        
+        <button class="header-cart-btn" id="header-cart" onclick="abrirCheckout()">
+            <i class="ph-bold ph-shopping-bag" style="font-size: 1.2rem;"></i>
+            <span class="badge" id="header-qty">0</span>
         </button>
     </header>
 
-    <div class="content-scroll">
-        <h2 class="section-title">¿Qué antojo tienes?</h2>
-        <div class="cat-container" id="cat-container"></div>
+    <div class="content">
+        <div class="map-widget">
+            <div id="home-map"></div>
+            <div class="pin-center">📍</div>
+            <div class="map-controls">
+                <div class="map-hint">Mueve el mapa para ubicar tu casa</div>
+                <button class="gps-btn" id="btn-gps" onclick="forzarGPS()"><i class="ph-bold ph-crosshair"></i> Mi GPS</button>
+            </div>
+        </div>
 
-        <h2 class="section-title">Destacados en Popayán</h2>
+        <h2 class="section-title">¿Qué antojo tienes hoy?</h2>
+        <div class="cat-row" id="cat-row"></div>
+
+        <h2 class="section-title">Top en Popayán</h2>
         <div class="rest-list" id="rest-container"></div>
     </div>
 
-    <div class="cart-fab" id="cart-fab" onclick="abrirCheckout()">
+    <div class="cart-bar" id="cart-bar" onclick="abrirCheckout()">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="cart-qty" id="cart-qty">0</div>
-            <span>Ver Pedido</span>
+            <div class="cart-bar-qty" id="cart-qty">0</div>
+            <span>Ver mi pedido</span>
         </div>
         <span id="cart-total">$0</span>
     </div>
@@ -135,37 +151,38 @@
         <div class="modal-header">
             <button class="btn-icon" onclick="cerrarModal('modal-menu')"><i class="ph-bold ph-caret-left"></i></button>
             <div style="text-align: center;">
-                <h2 id="menu-title" style="margin: 0; font-size: 1.2rem; font-weight: 800;">Restaurante</h2>
+                <h2 id="menu-title" style="margin: 0; font-size: 1.1rem; font-weight: 800;">Restaurante</h2>
                 <p id="menu-loc" style="margin: 0; font-size: 0.75rem; color: var(--text-muted);"><i class="ph-fill ph-map-pin"></i> Ubicación</p>
             </div>
-            <div style="width: 40px;"></div>
+            <div style="width: 42px;"></div>
         </div>
-        <div class="menu-grid" id="menu-grid"></div>
+        <div class="menu-scroll" id="menu-grid"></div>
     </div>
 
     <div id="modal-checkout" class="modal">
         <div class="modal-header">
             <button class="btn-icon" onclick="cerrarModal('modal-checkout')"><i class="ph-bold ph-x"></i></button>
-            <h2 style="margin: 0; font-size: 1.2rem; font-weight: 800;">Resumen del Pedido</h2>
-            <div style="width: 40px;"></div>
+            <h2 style="margin: 0; font-size: 1.1rem; font-weight: 800;">Confirmar Orden</h2>
+            <div style="width: 42px;"></div>
         </div>
         
-        <div class="map-container">
-            <div id="map"></div>
+        <div class="checkout-map-container">
+            <div id="checkout-map"></div>
             <div id="route-loader" class="loader">
-                <i class="ph-duotone ph-spinner-gap ph-spin" style="font-size: 2.5rem;"></i>
-                <span>IA calculando tráfico...</span>
+                <i class="ph-duotone ph-spinner-gap ph-spin" style="font-size: 2.5rem; margin-bottom: 10px;"></i>
+                Cotizando tráfico en tiempo real...
             </div>
         </div>
 
-        <div class="receipt-container" id="receipt-container" style="display: none;">
+        <div class="ticket-area">
+            <h3 style="margin: 0 0 15px; font-size: 1rem;">Tus Productos</h3>
             <div id="checkout-items" style="margin-bottom: 20px;"></div>
             
-            <div class="glass receipt-card">
-                <div class="r-row"><span>Costo Productos</span> <span class="r-val" id="chk-food">$0</span></div>
-                <div class="r-row"><span>Tarifa Base App</span> <span class="r-val">$2,500</span></div>
-                <div class="r-row"><span>Distancia (<span id="chk-km" style="color:var(--neon-1)">0</span> km x $1.000)</span> <span class="r-val" id="chk-dist-fee">$0</span></div>
-                <div class="r-row"><span>Tiempo Est. (<span id="chk-min" style="color:var(--neon-1)">0</span> min x $150)</span> <span class="r-val" id="chk-time-fee">$0</span></div>
+            <div class="glass" style="padding: 20px; border-radius: 20px;">
+                <div class="r-row"><span>Costo Comida</span> <span class="r-val" id="chk-food">$0</span></div>
+                <div class="r-row"><span>Tarifa App</span> <span class="r-val">$2,500</span></div>
+                <div class="r-row"><span>Distancia IA (<span id="chk-km" style="color:var(--neon-1)">0</span> km)</span> <span class="r-val" id="chk-dist">$0</span></div>
+                <div class="r-row"><span>Tiempo de ruta (<span id="chk-min" style="color:var(--neon-1)">0</span> min)</span> <span class="r-val" id="chk-time">$0</span></div>
                 
                 <div class="r-total">
                     <span class="text-neon">Total a Pagar</span>
@@ -173,7 +190,7 @@
                 </div>
             </div>
 
-            <button class="btn-neon" onclick="pagarPedido()">Confirmar y Pedir Domicilio <i class="ph-bold ph-arrow-right"></i></button>
+            <button class="btn-pay" onclick="pagarPedido()">Pedir Domicilio 🛵💨</button>
         </div>
     </div>
 </div>
@@ -183,149 +200,119 @@
 
 <script>
     /* =========================================================
-       1. BASE DE DATOS (POPAYÁN) Y GENERADOR ESCALABLE
+       1. GENERADOR DE DATOS FALSOS (POPAYÁN)
        ========================================================= */
-    const CATEGORIES = [
-        { id: 'burger', name: 'Hamburguesas', icon: 'ph-hamburger' },
-        { id: 'pizza', name: 'Pizzas', icon: 'ph-pizza' },
-        { id: 'tipica', name: 'Típica', icon: 'ph-cooking-pot' },
-        { id: 'carne', name: 'Carnes', icon: 'ph-fire' }
-    ];
-
-    // Zonas de Popayán para esparcir los restaurantes
-    const ZONAS = [
-        { loc: "Campanario", lat: 2.4578, lng: -76.5975 }, { loc: "B. Modelo", lat: 2.4485, lng: -76.6021 },
-        { loc: "Boulevard Rose", lat: 2.4630, lng: -76.5920 }, { loc: "Centro", lat: 2.4419, lng: -76.6063 },
-        { loc: "Sena Norte", lat: 2.4645, lng: -76.5942 }, { loc: "B. Bolívar", lat: 2.4465, lng: -76.6095 },
-        { loc: "Terra Plaza", lat: 2.4750, lng: -76.5800 }, { loc: "Campamento", lat: 2.4540, lng: -76.5990 },
-        { loc: "La Blanca", lat: 2.4550, lng: -76.6010 }, { loc: "Ciudad Jardín", lat: 2.4590, lng: -76.5880 }
-    ];
-
-    const REST_NAMES = {
-        burger: ["El Corral Campanario", "El Aguante Boulevard", "Chef Burger Terra Plaza", "Burger Stack Pomona", "Smash Payanés Centro", "La Viuda Bolívar", "American Burger Norte", "Rústica Campamento", "Street Food Catatumbo", "Patio Burger La Blanca"],
-        pizza: ["Primu's Pizza B. Modelo", "Pizzería Bolívar", "Monasterio Centro", "Salerno Campanario", "Pizza Nostra Norte", "D'Luigi Castellana", "Margarita Cadillal", "Horno Leña Santa Inés", "Nápoles Ciudad Jardín", "Romana Bello Horizonte"],
-        tipica: ["Carantanta", "Mora Castilla", "Pipián La Casona", "Tamales Don Carlos", "Sabor Caucano", "El Fogón San Camilo", "Frito Payanés", "Asados Sena", "Sancocho Patojo", "La Herradura"],
-        carne: ["Asados Sena Norte", "La Cosecha Catay", "El Tablazo Sur", "Parrillada Norte", "Carbón de Palo", "Res y Fuego", "Rancho Grande", "Brasas Payanesas", "El Novillo", "Cortes y Sabores"]
-    };
-
+    const CATEGORIES = [ { id: 'burger', name: 'Hamburguesas', icon: 'ph-hamburger' }, { id: 'pizza', name: 'Pizzas', icon: 'ph-pizza' }, { id: 'tipica', name: 'Típica', icon: 'ph-cooking-pot' }, { id: 'carne', name: 'Carnes', icon: 'ph-fire' } ];
+    const ZONAS = [ { loc: "Campanario", lat: 2.4578, lng: -76.5975 }, { loc: "B. Modelo", lat: 2.4485, lng: -76.6021 }, { loc: "Boulevard Rose", lat: 2.4630, lng: -76.5920 }, { loc: "Centro", lat: 2.4419, lng: -76.6063 }, { loc: "Norte", lat: 2.4645, lng: -76.5942 } ];
+    const NOMBRES = { burger: ["El Corral", "El Aguante", "Chef Burger", "Burger Stack"], pizza: ["Primu's Pizza", "Pizzería Bolívar", "Monasterio", "Salerno"], tipica: ["Carantanta", "Mora Castilla", "Pipián La Casona", "Sabor Caucano"], carne: ["Asados Sena", "La Cosecha", "El Tablazo", "Parrillada Norte"] };
     const MENUS = {
-        burger: [ { id: 101, name: "Burger Doble Neón", price: 26000, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=80" }, { id: 102, name: "Bacon Cheese", price: 22000, img: "https://images.unsplash.com/photo-1594212202815-b5b630e25c0e?w=200&q=80" }, { id: 103, name: "Papas Rústicas", price: 8000, img: "https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&q=80" } ],
-        pizza: [ { id: 201, name: "Pizza Carnívora", price: 42000, img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200&q=80" }, { id: 202, name: "Pepperoni Artesanal", price: 35000, img: "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=200&q=80" } ],
-        tipica: [ { id: 301, name: "12 Empanadas Pipián", price: 16000, img: "https://images.unsplash.com/photo-1628191081698-14114d24f0c4?w=200&q=80" }, { id: 302, name: "Tamal Payanés", price: 15000, img: "https://images.unsplash.com/photo-1626200419188-f1523a6b5e02?w=200&q=80" } ],
-        carne: [ { id: 401, name: "Punta de Anca 300g", price: 45000, img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80" }, { id: 402, name: "Costillas BBQ", price: 38000, img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80" } ]
+        burger: [ { id: 101, name: "Burger Doble Neón", price: 26000, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=80" }, { id: 102, name: "Papas Rústicas", price: 8000, img: "https://images.unsplash.com/photo-1576107232684-1279f3908594?w=200&q=80" } ],
+        pizza: [ { id: 201, name: "Pizza Familiar Carnes", price: 42000, img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200&q=80" } ],
+        tipica: [ { id: 301, name: "12 Empanadas Pipián", price: 16000, img: "https://images.unsplash.com/photo-1628191081698-14114d24f0c4?w=200&q=80" } ],
+        carne: [ { id: 401, name: "Punta de Anca", price: 45000, img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=200&q=80" } ]
     };
 
-    // Generar 40 restaurantes fusionando Nombres + Zonas + Menús
-    const RESTAURANTS = [];
-    let idCount = 1;
-    for (const cat in REST_NAMES) {
-        REST_NAMES[cat].forEach((name, i) => {
+    let RESTAURANTS = []; let idCount = 1;
+    for (const cat in NOMBRES) {
+        NOMBRES[cat].forEach((name, i) => {
             const z = ZONAS[i];
-            RESTAURANTS.push({ 
-                id: idCount++, cat, name, loc: z.loc, 
-                // Pequeña dispersión aleatoria para que no queden uno encima de otro en el mapa
-                lat: z.lat + (Math.random() - 0.5) * 0.005, 
-                lng: z.lng + (Math.random() - 0.5) * 0.005, 
-                img: MENUS[cat][0].img, prep: 15 + Math.floor(Math.random()*10) 
-            });
+            RESTAURANTS.push({ id: idCount++, cat, name, loc: z.loc, lat: z.lat + (Math.random()-0.5)*0.005, lng: z.lng + (Math.random()-0.5)*0.005, img: MENUS[cat][0].img, prep: 15 + Math.floor(Math.random()*10) });
         });
     }
 
-    /* =========================================================
-       2. ESTADO DE LA APP Y UTILIDADES
-       ========================================================= */
     const formatCOP = (num) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(num);
-    let userLoc = null;
-    let cart = { restId: null, items: [], total: 0 };
-    let mapInstance, routingControl;
 
     /* =========================================================
-       3. RENDERIZADO UI
+       2. LÓGICA DE UI Y MAPA PRINCIPAL (MÉTODO UBER)
        ========================================================= */
-    function init() {
-        const catCont = document.getElementById('cat-container');
+    let cart = { restId: null, items: [], total: 0 };
+    let mapMain, mapRoute, routingControl;
+    let userLoc = [2.4419, -76.6063]; // Centro histórico por defecto
+
+    window.onload = () => {
+        // Inicializar Categorías
+        const catRow = document.getElementById('cat-row');
         CATEGORIES.forEach((c, i) => {
-            catCont.innerHTML += `
-                <div class="glass cat-card ${i===0 ? 'active':''}" onclick="filterCat('${c.id}', this)">
-                    <i class="ph-duotone ${c.icon}"></i>
-                    <span>${c.name}</span>
-                </div>
-            `;
+            catRow.innerHTML += `<div class="glass cat-card ${i===0?'active':''}" onclick="filterCat('${c.id}', this)"><i class="ph-duotone ${c.icon}"></i><span>${c.name}</span></div>`;
         });
-        renderRests('burger');
-    }
+        filterCat('burger', catRow.firstElementChild);
+
+        // Inicializar Mapa Principal interactivo
+        mapMain = L.map('home-map', {zoomControl: false}).setView(userLoc, 15);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapMain);
+        
+        // MAGIA: El mapa captura las coordenadas del centro cada vez que el usuario termina de deslizarlo
+        mapMain.on('moveend', () => {
+            const center = mapMain.getCenter();
+            userLoc = [center.lat, center.lng];
+        });
+    };
 
     function filterCat(catId, el) {
-        document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        renderRests(catId);
-    }
-
-    function renderRests(catId) {
-        const cont = document.getElementById('rest-container');
-        cont.innerHTML = '';
+        if(el) { document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+        const cont = document.getElementById('rest-container'); cont.innerHTML = '';
         RESTAURANTS.filter(r => r.cat === catId).forEach(r => {
             cont.innerHTML += `
                 <div class="glass rest-card" onclick="openRest(${r.id})">
-                    <img src="${r.img}" class="rest-img">
+                    <img src="${r.img}">
                     <div class="rest-info">
-                        <h3>${r.name}</h3>
-                        <p><i class="ph-fill ph-map-pin"></i> ${r.loc}</p>
-                        <div class="tags">
-                            <span class="tag"><i class="ph-bold ph-clock"></i> ~${r.prep} min</span>
-                            <span class="tag" style="color: #F59E0B;"><i class="ph-fill ph-star"></i> 4.${Math.floor(Math.random()*5)+5}</span>
-                        </div>
+                        <h3>${r.name}</h3><p style="font-size: 0.75rem; color: var(--text-muted);"><i class="ph-fill ph-map-pin"></i> ${r.loc}</p>
+                        <div class="tag-row"><span class="tag"><i class="ph-bold ph-clock"></i> ~${r.prep}m</span></div>
                     </div>
-                    <i class="ph-bold ph-caret-right" style="color: var(--text-muted);"></i>
-                </div>
-            `;
+                    <i class="ph-bold ph-caret-right" style="color: var(--text-muted); font-size: 1.2rem;"></i>
+                </div>`;
         });
     }
 
     /* =========================================================
-       4. GPS Y MAPAS
+       3. INTENTO DE GPS (Bypass de Errores)
        ========================================================= */
-    function activarGPS() {
+    function forzarGPS() {
         const btn = document.getElementById('btn-gps');
         btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Satélite...';
         
-        if(navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => { userLoc = [pos.coords.latitude, pos.coords.longitude]; btn.innerHTML = '<i class="ph-fill ph-check-circle"></i> GPS Listo'; btn.classList.add('active'); },
-                err => { alert("Permiso denegado. Usaremos el Parque Caldas de Popayán."); userLoc = [2.4425, -76.6061]; btn.innerHTML = '<i class="ph-fill ph-map-pin"></i> P. Caldas'; btn.classList.add('active'); },
-                { enableHighAccuracy: true }
-            );
-        }
+        if(!navigator.geolocation) { alert("GPS no compatible."); return; }
+
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                mapMain.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                btn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
+                btn.style.borderColor = '#10B981'; btn.style.color = '#10B981';
+            },
+            err => {
+                alert("🔒 Permiso Bloqueado por iOS/Android.\n\nAl abrir este archivo localmente, los celulares bloquean el GPS por seguridad.\n\nNo te preocupes, ¡Desliza el mapa con tu dedo libremente para posicionar el pin sobre tu casa y funcionará igual!");
+                btn.innerHTML = '<i class="ph-bold ph-hand-pointing"></i> Usa el dedo';
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
     }
 
     /* =========================================================
-       5. LÓGICA DE MENÚ Y CARRITO
+       4. MENÚ Y CARRITO DOBLE (SEGURO PARA IOS)
        ========================================================= */
     function openRest(id) {
         const r = RESTAURANTS.find(x => x.id === id);
         document.getElementById('menu-title').innerText = r.name;
-        document.getElementById('menu-loc').innerHTML = `<i class="ph-fill ph-map-pin"></i> ${r.loc}, Popayán`;
+        document.getElementById('menu-loc').innerHTML = `<i class="ph-fill ph-map-pin"></i> ${r.loc}`;
         
-        const grid = document.getElementById('menu-grid');
-        grid.innerHTML = '';
+        const grid = document.getElementById('menu-grid'); grid.innerHTML = '';
         MENUS[r.cat].forEach(m => {
             grid.innerHTML += `
                 <div class="glass menu-item">
                     <img src="${m.img}">
-                    <div class="item-details">
-                        <h4>${m.name}</h4>
-                        <div class="item-price">${formatCOP(m.price)}</div>
+                    <div style="flex:1">
+                        <h4 style="margin:0 0 5px; font-size:1rem;">${m.name}</h4>
+                        <div style="color:var(--neon-1); font-weight:800; font-size: 1.1rem;">${formatCOP(m.price)}</div>
                     </div>
-                    <button class="btn-add" onclick="addCart(${r.id}, ${m.id}, '${m.name}', ${m.price}, event)"><i class="ph-bold ph-plus"></i></button>
-                </div>
-            `;
+                    <button class="btn-add" onclick="addCart(${r.id}, ${m.id}, '${m.name}', ${m.price}, this)"><i class="ph-bold ph-plus"></i></button>
+                </div>`;
         });
         document.getElementById('modal-menu').classList.add('open');
     }
 
-    function addCart(rId, mId, name, price, ev) {
+    function addCart(rId, mId, name, price, btn) {
         if(cart.restId && cart.restId !== rId) {
-            if(!confirm("¿Vaciar carrito para pedir en este nuevo restaurante?")) return;
+            if(!confirm("¿Deseas vaciar tu pedido actual para pedir en este restaurante nuevo?")) return;
             cart = { restId: null, items: [], total: 0 };
         }
         cart.restId = rId;
@@ -334,96 +321,91 @@
         cart.total += price;
         updateCartUI();
 
-        // Animación de Botón
-        const btn = ev.currentTarget;
-        btn.innerHTML = '<i class="ph-bold ph-check"></i>'; btn.style.borderColor = '#10B981'; btn.style.color = '#10B981';
-        setTimeout(() => { btn.innerHTML = '<i class="ph-bold ph-plus"></i>'; btn.style.borderColor = ''; btn.style.color = 'white'; }, 600);
+        btn.innerHTML = '<i class="ph-bold ph-check"></i>'; btn.style.background = '#10B981'; btn.style.borderColor = 'transparent';
+        setTimeout(() => { btn.innerHTML = '<i class="ph-bold ph-plus"></i>'; btn.style.background = ''; btn.style.borderColor = ''; }, 600);
     }
 
     function updateCartUI() {
-        const fab = document.getElementById('cart-fab');
-        if(cart.items.length > 0) {
-            fab.classList.add('visible');
-            document.getElementById('cart-qty').innerText = cart.items.reduce((sum, i) => sum + i.qty, 0);
+        const qty = cart.items.reduce((sum, i) => sum + i.qty, 0);
+        const bar = document.getElementById('cart-bar');
+        const headerBtn = document.getElementById('header-cart');
+        
+        if(qty > 0) {
+            bar.style.display = 'flex'; // Usamos display flex en lugar de transform para máxima seguridad móvil
+            headerBtn.style.display = 'flex';
+            document.getElementById('cart-qty').innerText = qty;
             document.getElementById('cart-total').innerText = formatCOP(cart.total);
-        } else { fab.classList.remove('visible'); }
+            document.getElementById('header-qty').innerText = qty;
+        } else {
+            bar.style.display = 'none';
+            headerBtn.style.display = 'none';
+        }
     }
 
     function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
 
     /* =========================================================
-       6. ALGORITMO LOGÍSTICO Y CHECKOUT
+       5. ALGORITMO OSRM DE LOGÍSTICA PARA EL CHECKOUT
        ========================================================= */
     function abrirCheckout() {
-        if(!userLoc) { alert("📍 Activa tu GPS arriba a la derecha para calcular el envío."); cerrarModal('modal-menu'); return; }
-        
         cerrarModal('modal-menu');
         document.getElementById('modal-checkout').classList.add('open');
         document.getElementById('route-loader').style.display = 'flex';
-        document.getElementById('receipt-container').style.display = 'none';
+        
+        document.getElementById('checkout-items').innerHTML = cart.items.map(i => `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.95rem;"><span><b style="color:var(--neon-1)">${i.qty}x</b> ${i.name}</span><b style="color:white">${formatCOP(i.price * i.qty)}</b></div>`).join('');
 
-        const itemsCont = document.getElementById('checkout-items');
-        itemsCont.innerHTML = cart.items.map(i => `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem;"><span><b style="color:var(--neon-1)">${i.qty}x</b> ${i.name}</span><span style="font-weight:700">${formatCOP(i.price * i.qty)}</span></div>`).join('');
-
-        // Delay para renderizar el mapa correctamente dentro del modal
-        setTimeout(() => { calcularLogistica(); }, 400);
+        // Delay para que Leaflet reconozca el tamaño del Modal antes de pintar el mapa
+        setTimeout(trazarRuta, 400);
     }
 
-    function calcularLogistica() {
-        if(!mapInstance) {
-            mapInstance = L.map('map', {zoomControl: false}).setView(userLoc, 14);
-            // Mapa Dark Premium CartoDB
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapInstance);
+    function trazarRuta() {
+        if(!mapRoute) {
+            mapRoute = L.map('checkout-map', {zoomControl: false}).setView(userLoc, 14);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(mapRoute);
         }
-        mapInstance.invalidateSize();
-        if(routingControl) mapInstance.removeControl(routingControl);
+        mapRoute.invalidateSize();
+        if(routingControl) mapRoute.removeControl(routingControl);
 
         const rest = RESTAURANTS.find(r => r.id === cart.restId);
-        const iconMaker = (color, icon) => L.divIcon({ html: `<div style="background:${color}; width:30px; height:30px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-size:16px; box-shadow:0 0 15px ${color};"><i class="ph-fill ${icon}"></i></div>`, className: '' });
+        const makeIcon = (color, text) => L.divIcon({ html: `<div style="background:${color}; width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:16px; border:2px solid white; box-shadow:0 0 15px ${color};">${text}</div>`, className: '' });
 
+        // Trazado IA Open Source
         routingControl = L.Routing.control({
             waypoints: [ L.latLng(rest.lat, rest.lng), L.latLng(userLoc[0], userLoc[1]) ],
-            createMarker: (i, wp) => L.marker(wp.latLng, { icon: iconMaker(i===0?'#FF0055':'#10B981', i===0?'ph-storefront':'ph-user') }),
-            lineOptions: { styles: [{color: '#FF5E00', weight: 4, opacity: 0.9}] }, // Línea Neón
+            createMarker: (i, wp) => L.marker(wp.latLng, { icon: makeIcon(i===0?'#FF0055':'#10B981', i===0?'🏪':'📍') }),
+            lineOptions: { styles: [{color: '#FF5E00', weight: 4}] },
             show: false, addWaypoints: false, fitSelectedRoutes: true
-        }).addTo(mapInstance);
+        }).addTo(mapRoute);
 
         routingControl.on('routesfound', function(e) {
-            const route = e.routes[0];
-            
-            // 1. Métrica Física
-            const distKm = (route.summary.totalDistance / 1000).toFixed(2);
-            const timeMin = Math.round(route.summary.totalTime / 60) + rest.prep;
+            const r = e.routes[0];
+            const distKm = (r.summary.totalDistance / 1000).toFixed(2);
+            const timeMin = Math.round(r.summary.totalTime / 60) + rest.prep;
 
-            // 2. Fórmulas de Startup (UberEats / Rappi logic)
-            const BASE = 2500;
-            const COSTO_KM = Math.round(distKm * 1000); // $1.000 x Km
-            const COSTO_TIEMPO = timeMin * 150;         // $150 x Minuto
-            const TOTAL = cart.total + BASE + COSTO_KM + COSTO_TIEMPO;
+            // Variables de cobro para Startup FoodTech
+            const TARIFA_APP = 2500;
+            const COSTO_KM = Math.round(distKm * 1000); 
+            const COSTO_MIN = timeMin * 100;         
+            const TOTAL = cart.total + TARIFA_APP + COSTO_KM + COSTO_MIN;
 
-            // 3. Pintar Recibo
             document.getElementById('route-loader').style.display = 'none';
-            document.getElementById('receipt-container').style.display = 'block';
-
             document.getElementById('chk-food').innerText = formatCOP(cart.total);
             document.getElementById('chk-km').innerText = distKm;
-            document.getElementById('chk-dist-fee').innerText = formatCOP(COSTO_KM);
+            document.getElementById('chk-dist').innerText = formatCOP(COSTO_KM);
             document.getElementById('chk-min').innerText = timeMin;
-            document.getElementById('chk-time-fee').innerText = formatCOP(COSTO_TIEMPO);
+            document.getElementById('chk-time').innerText = formatCOP(COSTO_MIN);
             document.getElementById('chk-total').innerText = formatCOP(TOTAL);
 
-            mapInstance.fitBounds(L.latLngBounds([userLoc, [rest.lat, rest.lng]]), {padding: [30, 30]});
+            mapRoute.fitBounds(L.latLngBounds([userLoc, [rest.lat, rest.lng]]), {padding: [30, 30]});
         });
     }
 
     function pagarPedido() {
-        alert("🎉 ¡Transacción Exitosa!\n\nTu domiciliario ha recibido la ruta trazada por la IA y se dirige a " + RESTAURANTS.find(r => r.id === cart.restId).name + ".\n\n¡Gracias por experimentar el diseño Glassmorphism Premium!");
+        alert("🎉 ¡Transacción Exitosa!\n\nTu domiciliario ha recibido las coordenadas de la ruta y va en camino por tu comida.");
         cart = { restId: null, items: [], total: 0 };
         updateCartUI();
         cerrarModal('modal-checkout');
     }
-
-    window.onload = init;
 </script>
 </body>
 </html>
