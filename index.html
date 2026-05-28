@@ -108,9 +108,53 @@
         /* Limpieza visual de Leaflet */
         .leaflet-routing-container { display: none !important; }
         .leaflet-control-attribution { display: none !important; }
+
+        /* MODAL DE PERMISO GPS PREMIUM */
+        .gps-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        }
+        .gps-modal-overlay.open { opacity: 1; pointer-events: auto; }
+        .gps-card {
+            width: 85%; max-width: 360px; padding: 40px 30px; border-radius: 35px;
+            text-align: center; transform: translateY(20px); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gps-modal-overlay.open .gps-card { transform: translateY(0); }
+        .gps-icon-box {
+            width: 85px; height: 85px; background: var(--gradient); border-radius: 28px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 25px; font-size: 2.8rem; box-shadow: 0 15px 30px rgba(255, 94, 0, 0.4);
+            animation: pulse-gps 2s infinite;
+        }
+        @keyframes pulse-gps {
+            0% { transform: scale(1); box-shadow: 0 15px 30px rgba(255, 94, 0, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 45px rgba(255, 94, 0, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 15px 30px rgba(255, 94, 0, 0.4); }
+        }
     </style>
 </head>
 <body>
+
+<div id="modal-gps" class="gps-modal-overlay">
+    <div class="glass gps-card">
+        <div class="gps-icon-box">
+            <i class="ph-fill ph-map-pin-line" style="color: white;"></i>
+        </div>
+        <h2 style="margin-bottom: 12px; font-weight: 900; font-size: 1.5rem;">Activar GPS</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 30px;">
+            Para entregarte comida caliente y rápida, necesitamos saber dónde estás. ¿Nos permites ubicarte?
+        </p>
+        <button class="btn-pay" style="margin-top: 0; margin-bottom: 20px; width: 100%;" onclick="solicitarGPS()">
+            <i class="ph-bold ph-navigation-arrow"></i> Permitir Ubicación
+        </button>
+        <div style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; text-decoration: underline; font-weight: 600;" onclick="cerrarGPSModal()">
+            Elegir manualmente
+        </div>
+    </div>
+</div>
 
 <div id="app">
     <header>
@@ -246,7 +290,67 @@
             const center = mapMain.getCenter();
             userLoc = [center.lat, center.lng];
         });
+
+        // Mostrar modal de GPS tras un breve delay para que el usuario vea la app primero
+        setTimeout(() => {
+            if (!localStorage.getItem('gps_perm')) {
+                document.getElementById('modal-gps').classList.add('open');
+            }
+        }, 1200);
     };
+
+    function cerrarGPSModal() {
+        document.getElementById('modal-gps').classList.remove('open');
+    }
+
+    async function solicitarGPS() {
+        const btn = document.querySelector('#modal-gps .btn-pay');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Solicitando...';
+        btn.disabled = true;
+
+        if (!navigator.geolocation) {
+            alert("Tu dispositivo no soporta geolocalización.");
+            cerrarGPSModal();
+            return;
+        }
+
+        // En iOS, la solicitud debe ser disparada por una acción del usuario (como este click)
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                userLoc = [lat, lng];
+                mapMain.setView(userLoc, 17);
+                localStorage.setItem('gps_perm', 'true');
+
+                // Actualizar UI del botón de GPS en el mapa también
+                const gpsBtn = document.getElementById('btn-gps');
+                gpsBtn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
+                gpsBtn.style.borderColor = '#10B981';
+                gpsBtn.style.color = '#10B981';
+
+                cerrarGPSModal();
+            },
+            (err) => {
+                console.error("Error GPS:", err);
+                let msg = "No pudimos obtener tu ubicación.";
+                if (err.code === 1) msg = "Has denegado el permiso de ubicación. Por favor actívalo en los ajustes de tu navegador.";
+                else if (err.code === 2) msg = "Ubicación no disponible.";
+                else if (err.code === 3) msg = "Tiempo de espera agotado.";
+
+                alert(msg);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                cerrarGPSModal();
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 8000,
+                maximumAge: 0
+            }
+        );
+    }
 
     function filterCat(catId, el) {
         if(el) { document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
@@ -268,22 +372,29 @@
        3. INTENTO DE GPS (Bypass de Errores)
        ========================================================= */
     function forzarGPS() {
+        // Reutilizamos la lógica del modal o simplemente llamamos a solicitarGPS
+        // pero con un feedback visual en el botón específico del mapa.
         const btn = document.getElementById('btn-gps');
+        const originalHTML = btn.innerHTML;
         btn.innerHTML = '<i class="ph-bold ph-spinner-gap ph-spin"></i> Satélite...';
         
         if(!navigator.geolocation) { alert("GPS no compatible."); return; }
 
         navigator.geolocation.getCurrentPosition(
             pos => {
-                mapMain.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                userLoc = [lat, lng];
+                mapMain.setView(userLoc, 17);
                 btn.innerHTML = '<i class="ph-bold ph-check"></i> Ubicado';
                 btn.style.borderColor = '#10B981'; btn.style.color = '#10B981';
             },
             err => {
-                alert("🔒 Permiso Bloqueado por iOS/Android.\n\nAl abrir este archivo localmente, los celulares bloquean el GPS por seguridad.\n\nNo te preocupes, ¡Desliza el mapa con tu dedo libremente para posicionar el pin sobre tu casa y funcionará igual!");
-                btn.innerHTML = '<i class="ph-bold ph-hand-pointing"></i> Usa el dedo';
+                console.error(err);
+                alert("No pudimos obtener tu ubicación exacta. Por favor, asegúrate de tener el GPS activado y dar permisos al navegador.");
+                btn.innerHTML = originalHTML;
             },
-            { enableHighAccuracy: true, timeout: 5000 }
+            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
     }
 
